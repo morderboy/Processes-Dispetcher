@@ -176,7 +176,7 @@ int ProcInfo() {
 	}
 
 	k = ProcessPriorityTake(&procinfo, str);
-	if (k == 2) {
+	if (k == 3 || k == 1) {
 		cout << "Error ProcInfo 5" << endl;
 		delete str, pid;
 		if (!CloseHandle(procinfo)) {
@@ -185,7 +185,7 @@ int ProcInfo() {
 		}
 		return 5;
 	}
-	else if (k == 3 || k == 1) {
+	else if (k == 2) {
 		cout << "Couldn't take proc info because " << *str << endl;
 		delete str, pid;
 		if (!CloseHandle(procinfo)) {
@@ -250,6 +250,7 @@ int ListOfProcesses() {
 		cout << "PROC ID   PROC NAME   PROC PRIORITY" << endl;
 		if (cout.fail()) {
 			cout.clear();
+			delete procSnap, pe;
 			cout << "Error ListofProcesses 4" << endl;
 			return 4;
 		}
@@ -258,7 +259,7 @@ int ListOfProcesses() {
 		strProcPrior = new string("a");
 		if (strProcPrior == nullptr) {
 			cout << "Error ListofProcesses 5" << endl;
-			delete strProcPrior;
+			delete strProcPrior, procSnap, pe;
 			return 5;
 		}
 
@@ -271,14 +272,14 @@ int ListOfProcesses() {
 			);
 			if (hproc == INVALID_HANDLE_VALUE) {
 				cout << "Error ListofProcesses 6" << endl;
-				delete strProcPrior;
+				delete strProcPrior, procSnap, pe;
 				return 6;
 			}
 
 			i = ProcessPriorityTake(&hproc, strProcPrior);
 			if (i != 2 && i != 0) {
 				cout << "Error ListofProcesses 7" << endl;
-				delete strProcPrior;
+				delete strProcPrior, procSnap, pe;
 				if (!CloseHandle(hproc)) {
 					cout << "Error ListofProcesses 8" << endl;
 					return 8;
@@ -290,27 +291,20 @@ int ListOfProcesses() {
 			if (cout.fail()) {
 				cout.clear();
 				cout << "Error ListofProcesses 9" << endl;
-				delete strProcPrior;
+				delete strProcPrior, procSnap, pe;
 				if (!CloseHandle(hproc)) {
 					cout << "Error ListofProcesses 10" << endl;
 					return 10;
 				}
 				return 9;
 			}
-			
-			if (i != 2) {
-				if (!CloseHandle(hproc)) {
-					cout << "Error ListofProcesses 11" << endl;
-					return 11;
-				}
-			}
 
 		} while (Process32Next(*procSnap, pe));
 
 		if (!CloseHandle(*procSnap)) {
-			cout << "Error ListofProcesses 12" << endl;
+			cout << "Error ListofProcesses 11" << endl;
 			delete strProcPrior, procSnap, pe;
-			return 12;
+			return 11;
 		}
 
 		delete strProcPrior, procSnap, pe;
@@ -318,13 +312,13 @@ int ListOfProcesses() {
 		return 0;
 	}
 	else {
+		delete pe, procSnap;
 		if (!CloseHandle(*procSnap)) {
-			cout << "Error ListofProcesses 13" << endl;
-			delete pe, procSnap;
-			return 13;
+			cout << "Error ListofProcesses 12" << endl;
+			return 12;
 		}
 		cout << "COULDN'T TAKE PROCESS LIST"; 
-		return 14; 
+		return 13; 
 	}
 }
 
