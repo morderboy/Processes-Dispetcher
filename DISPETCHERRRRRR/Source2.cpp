@@ -39,189 +39,185 @@ int ProcessPriorityTake(HANDLE* hproc, string* str) {
 	return 0;
 }
 
-int KillProc() {
-	DWORD pid;
+int PidTake(DWORD* pid) {
+
+	if (!pid) {
+		cout << "Error PidTake 1" << endl;
+		return 1;
+	}
+
 	cout << "ENTER PID" << endl;
 	if (cout.fail()) {
 		cout.clear();
-		cout << "Error KillProc 1" << endl;
-		return 1;
+		cout << "Error PidTake 2" << endl;
+		return 2;
 	}
 
 	string* intermedStr = nullptr;
 	intermedStr = new string("a");
 	if (intermedStr == nullptr) {
-		cout << "Error KillProc 2" << endl;
-		return 2;
+		cout << "Error PidTake 3" << endl;
+		return 3;
 	}
 	char* end = nullptr;
 	end = new char('a');
 	if (end == nullptr) {
-		cout << "Error KillProc 3" << endl;
-		return 3;
+		cout << "Error PidTake 4" << endl;
+		return 4;
 	}
 	if (!getline(cin, *intermedStr, '\n')) {
 		cin.clear();
-		cout << "Error KillProc 4" << endl;
+		cout << "Error PidTake 5" << endl;
 		delete end, intermedStr;
-		return 4;
-	}
-	pid = strtol((*intermedStr).c_str(), &end, 10);
-	if (pid == 0 || pid == LONG_MAX) {
-		cout << "Error KillProc 5" << endl;
-		delete intermedStr, end;
 		return 5;
+	}
+	*pid = strtol((*intermedStr).c_str(), &end, 10);
+	if (*pid == 0 || *pid == LONG_MAX) {
+		cout << "Error PidTake 6" << endl;
+		delete intermedStr, end;
+		return 6;
 	}
 	delete intermedStr, end;
 	intermedStr, end = nullptr;
 
+	return 0;
+}
+
+int KillProc() {
+	DWORD* pid = nullptr;
+	pid = new DWORD('A');
+	if (pid == nullptr) {
+		cout << "Error KillProc 1" << endl;
+		delete pid;
+		return 1;
+	}
+	
+	if (PidTake(pid) != 0) {
+		cout << "Error KillProc PidTake 2" << endl;
+		delete pid;
+		return 2;
+	}
+
 	HANDLE deletproc = OpenProcess(
 		PROCESS_ALL_ACCESS,
 		FALSE,
-		pid
+		*pid
 	);
-	if (!deletproc) {
+
+	if (deletproc == INVALID_HANDLE_VALUE) {
 		cout << "Error KillProc INCORRECT PID";
-		return 6;
+		delete pid;
+		return 3;
 	}
 	if (TerminateProcess(deletproc, 0)) { 
 		cout << "PROCESS SUCCESSFULLY DELETED" << endl;
 		if (cout.fail()) {
 			cout.clear();
-			cout << "Error KillProc 7" << endl;
-			return 7;
+			cout << "Error KillProc 4" << endl;
+			delete pid;
+			return 4;
 		}
 	}
 	else { 
-		cout << "Error KillProc 8";
+		cout << "Error KillProc 5";
+		delete pid;
 		if (!CloseHandle(deletproc)) {
-			cout << "Error KillProc 9" << endl;
-			return 9;
+			cout << "Error KillProc 6" << endl;
+			return 6;
 		}
-		return 8;
+		return 5;
 	}
 	if (!CloseHandle(deletproc)) {
-		cout << "Error KillProc 10" << endl;
-		return 10;
+		cout << "Error KillProc 7" << endl;
+		delete pid;
+		return 7;
 	}
+
+	delete pid;
 	return 0;
 }
 
 int ProcInfo() {
 	DWORD pdwHandleCount = (DWORD)('A');
-	DWORD pid;
-	cout << "ENTER PID" << endl;
-	if (cout.fail()) {
-		cout.clear();
+	int k;
+
+	DWORD* pid = nullptr;
+	pid = new DWORD('A');
+	if (pid == nullptr) {
 		cout << "Error ProcInfo 1" << endl;
+		delete pid;
 		return 1;
 	}
 
-	int* k = nullptr;
-
-	string* intermedStr = nullptr;
-	intermedStr = new string("a");
-	if (intermedStr == nullptr) {
-		cout << "Error ProcInfo 2" << endl;
-		delete intermedStr, k;
+	if (PidTake(pid) != 0) {
+		cout << "Eroror ProcInfo PidTake 2" << endl;
+		delete pid;
 		return 2;
 	}
-
-	char* end = nullptr;
-	end = new char('a');
-	if (end == nullptr) {
-		cout << "Error ProcInfo 3" << endl;
-		delete end, intermedStr, k;
-		return 3;
-	}
-
-	if (!getline(cin, *intermedStr, '\n')) {
-		cin.clear();
-		cout << "Error ProcInfo 4" << endl;
-		delete end, intermedStr, k;
-		return 4;
-	}
-
-	pid = strtol((*intermedStr).c_str(), &end, 10);
-	if (pid == 0 || pid == LONG_MAX) {
-		cout << "Error ProcInfo 5" << endl;
-		delete intermedStr, end, k;
-		return 5;
-	}
-	delete intermedStr, end;
-	intermedStr, end = nullptr;
 
 	HANDLE procinfo = OpenProcess(
 		PROCESS_ALL_ACCESS,
 		FALSE,
-		pid
+		*pid
 	);
 
-	if (!procinfo) {
+	if (procinfo == INVALID_HANDLE_VALUE) {
 		cout << "INCORRECT PID ProcInfo" << endl;
-		return 6;
+		delete pid;
+		return 3;
 	}
 
 	string* str = nullptr; 
 	str = new string("a");
 	if (str == nullptr) {
-		cout << "Error ProcInfo 7" << endl;
-		delete str, k;
-		return 7;
+		cout << "Error ProcInfo 4" << endl;
+		delete str, pid;
+		return 4;
 	}
 
-	k = new int(ProcessPriorityTake(&procinfo, str));
-	if (k == nullptr) {
-		cout << "Error ProcInfo 8" << endl;
-		delete k, str;
+	k = ProcessPriorityTake(&procinfo, str);
+	if (k == 2) {
+		cout << "Error ProcInfo 5" << endl;
+		delete str, pid;
 		if (!CloseHandle(procinfo)) {
-			cout << "Error ProcInfo 9" << endl;
-			return 9;
+			cout << "Error ProcInfo 6" << endl;
+			return 6;
 		}
-		return 8;
+		return 5;
 	}
-	else if (*k == 2) {
-		cout << "Error ProcInfo 10" << endl;
-		delete k, str;
-		if (!CloseHandle(procinfo)) {
-			cout << "Error ProcInfo 11" << endl;
-			return 11;
-		}
-		return 10;
-	}
-	else if (*k == 3 || *k == 1) {
+	else if (k == 3 || k == 1) {
 		cout << "Couldn't take proc info because " << *str << endl;
-		delete k, str;
+		delete str, pid;
 		if (!CloseHandle(procinfo)) {
-			cout << "Error ProcInfo 13" << endl;
-			return 13;
+			cout << "Error ProcInfo 8" << endl;
+			return 8;
 		}
-		return 12;
+		return 7;
 	}
 	else {
 		if (!GetProcessHandleCount(procinfo, &pdwHandleCount)) {
-			cout << "Error ProcInfo 14" << endl;
-			delete k, str;
-			return 14;
+			cout << "Error ProcInfo 9" << endl;
+			delete str, pid;
+			return 9;
 		}
-		cout << "PID - " << pid << "  HandleCount - " << pdwHandleCount << "  Priority - " << *str << endl;
+		cout << "PID - " << *pid << "  HandleCount - " << pdwHandleCount << "  Priority - " << *str << endl;
 		if (cout.fail()) {
 			cout.clear();
-			cout << "Error ProcInfo 15" << endl;
-			delete k, str;
+			cout << "Error ProcInfo 10" << endl;
+			delete str, pid;
 			if (!CloseHandle(procinfo)) {
-				cout << "Error ProcInfo 16" << endl;
-				return 16;
+				cout << "Error ProcInfo 11" << endl;
+				return 11;
 			}
-			return 15;
+			return 10;
 		}
 	}
 
-	delete k, str;
-	k, str = nullptr;
+	delete str, pid;
+	str, pid = nullptr;
 	if (!CloseHandle(procinfo)) {
-		cout << "Error ProcInfo 17" << endl;
-		return 17;
+		cout << "Error ProcInfo 12" << endl;
+		return 12;
 	}
 	return 0;
 }
