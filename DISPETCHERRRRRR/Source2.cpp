@@ -3,6 +3,7 @@
 #include <tlhelp32.h>
 #include <iostream>
 #include <string>
+#include <new>
 
 using namespace std;
 
@@ -53,14 +54,13 @@ int PidTake(DWORD* pid) {
 		return 2;
 	}
 
-	string* intermedStr = nullptr;
-	intermedStr = new string("a");
+	string* intermedStr = new(nothrow) string("a");
 	if (intermedStr == nullptr) {
 		cout << "Error PidTake 3" << endl;
 		return 3;
 	}
-	char* end = nullptr;
-	end = new char('a');
+	
+	char* end = new(nothrow) char('a');
 	if (end == nullptr) {
 		cout << "Error PidTake 4" << endl;
 		return 4;
@@ -84,8 +84,8 @@ int PidTake(DWORD* pid) {
 }
 
 int KillProc() {
-	DWORD* pid = nullptr;
-	pid = new DWORD('A');
+
+	DWORD* pid = new(nothrow) DWORD('A');
 	if (pid == nullptr) {
 		cout << "Error KillProc 1" << endl;
 		delete pid;
@@ -109,6 +109,7 @@ int KillProc() {
 		delete pid;
 		return 3;
 	}
+
 	if (TerminateProcess(deletproc, 0)) { 
 		cout << "PROCESS SUCCESSFULLY DELETED" << endl;
 		if (cout.fail()) {
@@ -141,8 +142,7 @@ int ProcInfo() {
 	DWORD pdwHandleCount = (DWORD)('A');
 	int k;
 
-	DWORD* pid = nullptr;
-	pid = new DWORD('A');
+	DWORD* pid = new(nothrow) DWORD('A');
 	if (pid == nullptr) {
 		cout << "Error ProcInfo 1" << endl;
 		delete pid;
@@ -167,8 +167,8 @@ int ProcInfo() {
 		return 3;
 	}
 
-	string* str = nullptr; 
-	str = new string("a");
+
+	string* str = new(nothrow) string("a");
 	if (str == nullptr) {
 		cout << "Error ProcInfo 4" << endl;
 		delete str, pid;
@@ -223,8 +223,8 @@ int ProcInfo() {
 }
 
 int ListOfProcesses() {
-	HANDLE* procSnap = nullptr;
-	procSnap = new HANDLE;
+
+	HANDLE* procSnap = new(nothrow) HANDLE;
 	if (procSnap == nullptr) {
 		cout << "Error 1" << endl;
 		return 1;
@@ -236,8 +236,7 @@ int ListOfProcesses() {
 		return 2;
 	}
 
-	PROCESSENTRY32* pe = nullptr;
-	pe = new PROCESSENTRY32{ 0 };
+	PROCESSENTRY32* pe = new(nothrow) PROCESSENTRY32;
 	if (pe == nullptr) {
 		cout << "Error 3" << endl;
 		return 3;
@@ -255,8 +254,7 @@ int ListOfProcesses() {
 			return 4;
 		}
 
-		string* strProcPrior = nullptr;
-		strProcPrior = new string("a");
+		string* strProcPrior = new(nothrow) string("a");
 		if (strProcPrior == nullptr) {
 			cout << "Error ListofProcesses 5" << endl;
 			delete strProcPrior, procSnap, pe;
@@ -324,8 +322,7 @@ int ListOfProcesses() {
 
 int Menu() {
 
-	string* ASK = nullptr;
-	ASK = new string("a");
+	string* ASK = new(nothrow) string("a");
 	if (ASK == nullptr) {
 		cout << "Error Menu 1" << endl;
 		return 1;
