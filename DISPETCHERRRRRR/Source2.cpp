@@ -63,6 +63,7 @@ int PidTake(DWORD* pid) {
 	char* end = new(nothrow) char('a');
 	if (end == nullptr) {
 		cout << "Error PidTake 4" << endl;
+		delete intermedStr;
 		return 4;
 	}
 	if (!getline(cin, *intermedStr, '\n')) {
@@ -71,12 +72,14 @@ int PidTake(DWORD* pid) {
 		delete end, intermedStr;
 		return 5;
 	}
+
 	*pid = strtol((*intermedStr).c_str(), &end, 10);
 	if (*pid == 0 || *pid == LONG_MAX) {
 		cout << "Error PidTake 6" << endl;
 		delete intermedStr, end;
 		return 6;
 	}
+
 	delete intermedStr, end;
 	intermedStr, end = nullptr;
 
@@ -88,7 +91,6 @@ int KillProc() {
 	DWORD* pid = new(nothrow) DWORD('A');
 	if (pid == nullptr) {
 		cout << "Error KillProc 1" << endl;
-		delete pid;
 		return 1;
 	}
 	
@@ -114,24 +116,29 @@ int KillProc() {
 		cout << "PROCESS SUCCESSFULLY DELETED" << endl;
 		if (cout.fail()) {
 			cout.clear();
-			cout << "Error KillProc 4" << endl;
 			delete pid;
+			if (!CloseHandle(deletproc)) {
+				cout << "Error KillProc 5" << endl;
+				return 5;
+			}
+			cout << "Error KillProc 4" << endl;
 			return 4;
 		}
 	}
 	else { 
-		cout << "Error KillProc 5";
+		cout << "Error KillProc 6";
 		delete pid;
 		if (!CloseHandle(deletproc)) {
-			cout << "Error KillProc 6" << endl;
-			return 6;
+			cout << "Error KillProc 7" << endl;
+			return 7;
 		}
-		return 5;
+		return 6;
 	}
+
 	if (!CloseHandle(deletproc)) {
-		cout << "Error KillProc 7" << endl;
+		cout << "Error KillProc 8" << endl;
 		delete pid;
-		return 7;
+		return 8;
 	}
 
 	delete pid;
@@ -145,7 +152,6 @@ int ProcInfo() {
 	DWORD* pid = new(nothrow) DWORD('A');
 	if (pid == nullptr) {
 		cout << "Error ProcInfo 1" << endl;
-		delete pid;
 		return 1;
 	}
 
@@ -171,53 +177,61 @@ int ProcInfo() {
 	string* str = new(nothrow) string("a");
 	if (str == nullptr) {
 		cout << "Error ProcInfo 4" << endl;
-		delete str, pid;
+		delete pid;
+		if (!CloseHandle(procinfo)) {
+			cout << "Error ProcInfo 5" << endl;
+			return 5;
+		}
 		return 4;
 	}
 
 	k = ProcessPriorityTake(&procinfo, str);
 	if (k == 3 || k == 1) {
-		cout << "Error ProcInfo 5" << endl;
+		cout << "Error ProcInfo 6" << endl;
 		delete str, pid;
 		if (!CloseHandle(procinfo)) {
-			cout << "Error ProcInfo 6" << endl;
-			return 6;
+			cout << "Error ProcInfo 7" << endl;
+			return 7;
 		}
-		return 5;
+		return 6;
 	}
 	else if (k == 2) {
-		cout << "Couldn't take proc info because " << *str << endl;
+		cout << "Error ProcInfo 8: Couldn't take proc info because " << *str << endl;
 		delete str, pid;
 		if (!CloseHandle(procinfo)) {
-			cout << "Error ProcInfo 8" << endl;
-			return 8;
+			cout << "Error ProcInfo 9" << endl;
+			return 9;
 		}
-		return 7;
+		return 8;
 	}
 	else {
 		if (!GetProcessHandleCount(procinfo, &pdwHandleCount)) {
-			cout << "Error ProcInfo 9" << endl;
-			delete str, pid;
-			return 9;
-		}
-		cout << "PID - " << *pid << "  HandleCount - " << pdwHandleCount << "  Priority - " << *str << endl;
-		if (cout.fail()) {
-			cout.clear();
 			cout << "Error ProcInfo 10" << endl;
 			delete str, pid;
-			if (!CloseHandle(procinfo)) {
+			if (CloseHandle(procinfo)) {
 				cout << "Error ProcInfo 11" << endl;
 				return 11;
 			}
 			return 10;
+		}
+		cout << "PID - " << *pid << "  HandleCount - " << pdwHandleCount << "  Priority - " << *str << endl;
+		if (cout.fail()) {
+			cout.clear();
+			cout << "Error ProcInfo 12" << endl;
+			delete str, pid;
+			if (!CloseHandle(procinfo)) {
+				cout << "Error ProcInfo 13" << endl;
+				return 13;
+			}
+			return 12;
 		}
 	}
 
 	delete str, pid;
 	str, pid = nullptr;
 	if (!CloseHandle(procinfo)) {
-		cout << "Error ProcInfo 12" << endl;
-		return 12;
+		cout << "Error ProcInfo 14" << endl;
+		return 14;
 	}
 	return 0;
 }
@@ -226,19 +240,23 @@ int ListOfProcesses() {
 
 	HANDLE* procSnap = new(nothrow) HANDLE;
 	if (procSnap == nullptr) {
-		cout << "Error 1" << endl;
+		cout << "Error ListOfProcesses 1" << endl;
 		return 1;
 	}
+
 	*procSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	if (procSnap == INVALID_HANDLE_VALUE) {
-		delete procSnap;
-		cout << "Error 2" << endl;
+		cout << "Error ListOfProcesses 2" << endl;
 		return 2;
 	}
 
 	PROCESSENTRY32* pe = new(nothrow) PROCESSENTRY32;
 	if (pe == nullptr) {
-		cout << "Error 3" << endl;
+		cout << "Error ListofProcesses 3" << endl;
+		if (!CloseHandle(*procSnap)) {
+			cout << "Error ListofProcesses" << endl;
+			return 4;
+		}
 		return 3;
 	}
 	(*pe).dwSize = sizeof(PROCESSENTRY32);
@@ -249,74 +267,116 @@ int ListOfProcesses() {
 		cout << "PROC ID   PROC NAME   PROC PRIORITY" << endl;
 		if (cout.fail()) {
 			cout.clear();
-			delete procSnap, pe;
-			cout << "Error ListofProcesses 4" << endl;
-			return 4;
+			delete pe;
+			if (!CloseHandle(*procSnap)) {
+				cout << "Error ListofProcesses 6" << endl;
+				return 6;
+			}
+			cout << "Error ListofProcesses 5" << endl;
+			return 5;
 		}
 
 		string* strProcPrior = new(nothrow) string("a");
 		if (strProcPrior == nullptr) {
-			cout << "Error ListofProcesses 5" << endl;
-			delete strProcPrior, procSnap, pe;
-			return 5;
+			cout << "Error ListofProcesses 7" << endl;
+			delete pe;
+			if (!CloseHandle(*procSnap)) {
+				cout << "Error ListofProcesses 8" << endl;
+				return 8;
+			}
+			return 7;
 		}
 
 		do {
 			if (!pe->th32ProcessID) continue;
+
 			HANDLE hproc = OpenProcess(
 				PROCESS_ALL_ACCESS,
 				FALSE,
 				pe->th32ProcessID
 			);
+
 			if (hproc == INVALID_HANDLE_VALUE) {
-				cout << "Error ListofProcesses 6" << endl;
-				delete strProcPrior, procSnap, pe;
-				return 6;
-			}
-
-			i = ProcessPriorityTake(&hproc, strProcPrior);
-			if (i != 2 && i != 0) {
-				cout << "Error ListofProcesses 7" << endl;
-				delete strProcPrior, procSnap, pe;
-				if (!CloseHandle(hproc)) {
-					cout << "Error ListofProcesses 8" << endl;
-					return 8;
-				}
-				return 7;
-			}
-
-			cout << pe->th32ProcessID << "  " << pe->szExeFile << "  " << *strProcPrior << endl;
-			if (cout.fail()) {
-				cout.clear();
 				cout << "Error ListofProcesses 9" << endl;
-				delete strProcPrior, procSnap, pe;
-				if (!CloseHandle(hproc)) {
+				delete strProcPrior, pe;
+				if (!CloseHandle(*procSnap)) {
 					cout << "Error ListofProcesses 10" << endl;
 					return 10;
 				}
 				return 9;
 			}
 
+			i = ProcessPriorityTake(&hproc, strProcPrior);
+			if (i != 2 && i != 0) {
+				cout << "Error ListofProcesses 11" << endl;
+				delete strProcPrior, pe;
+				if (!CloseHandle(hproc)) {
+					cout << "Error ListofProcesses 12" << endl;
+					if (!CloseHandle(*procSnap)) {
+						cout << "Error ListofProcesses 13" << endl;
+						return 13;
+					}
+					return 12;
+				}
+				if (!CloseHandle(*procSnap)) {
+					cout << "Error ListofProcesses 14" << endl;
+					return 14;
+				}
+				return 11;
+			}
+
+			cout << pe->th32ProcessID << "  " << pe->szExeFile << "  " << *strProcPrior << endl;
+			if (cout.fail()) {
+				cout.clear();
+				cout << "Error ListofProcesses 15" << endl;
+				delete strProcPrior, pe;
+				if (!CloseHandle(hproc)) {
+					cout << "Error ListofProcesses 16" << endl;
+					if (!CloseHandle(*procSnap)) {
+						cout << "Error ListofProcesses 17" << endl;
+						return 17;
+					}
+					return 16;
+				}
+				if (!CloseHandle(*procSnap)) {
+					cout << "Error ListofProcesses 18" << endl;
+					return 18;
+				}
+				return 15;
+			}
+
+		if (i == 0) {
+			if (!CloseHandle(hproc)) {
+				cout << "Error ListofProcesses 19" << endl;
+				delete strProcPrior, pe;
+				if (!CloseHandle(*procSnap)) {
+					cout << "Error ListofProcesses 20" << endl;
+					return 20;
+				}
+				return 19;
+			}
+		}
+
 		} while (Process32Next(*procSnap, pe));
 
 		if (!CloseHandle(*procSnap)) {
-			cout << "Error ListofProcesses 11" << endl;
-			delete strProcPrior, procSnap, pe;
-			return 11;
+			cout << "Error ListofProcesses 21" << endl;
+			delete strProcPrior, pe;
+			return 21;
 		}
 
-		delete strProcPrior, procSnap, pe;
+		delete strProcPrior, pe;
 		strProcPrior, procSnap, pe = nullptr;
 		return 0;
 	}
 	else {
-		delete pe, procSnap;
-		if (!CloseHandle(*procSnap)) {
-			cout << "Error ListofProcesses 12" << endl;
-			return 12;
-		}
+		delete pe;
 		cout << "COULDN'T TAKE PROCESS LIST"; 
-		return 13; 
+		if (!CloseHandle(*procSnap)) {
+			cout << "Error ListofProcesses 22" << endl;
+			return 22;
+		}
+		return 23; 
 	}
 }
 
