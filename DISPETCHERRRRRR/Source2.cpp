@@ -247,6 +247,7 @@ int ListOfProcesses() {
 	*procSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	if (procSnap == INVALID_HANDLE_VALUE) {
 		cout << "Error ListOfProcesses 2" << endl;
+		delete procSnap;
 		return 2;
 	}
 
@@ -255,8 +256,10 @@ int ListOfProcesses() {
 		cout << "Error ListofProcesses 3" << endl;
 		if (!CloseHandle(*procSnap)) {
 			cout << "Error ListofProcesses" << endl;
+			delete procSnap;
 			return 4;
 		}
+		delete procSnap;
 		return 3;
 	}
 	(*pe).dwSize = sizeof(PROCESSENTRY32);
@@ -270,8 +273,10 @@ int ListOfProcesses() {
 			delete pe;
 			if (!CloseHandle(*procSnap)) {
 				cout << "Error ListofProcesses 6" << endl;
+				delete procSnap;
 				return 6;
 			}
+			delete procSnap;
 			cout << "Error ListofProcesses 5" << endl;
 			return 5;
 		}
@@ -282,8 +287,10 @@ int ListOfProcesses() {
 			delete pe;
 			if (!CloseHandle(*procSnap)) {
 				cout << "Error ListofProcesses 8" << endl;
+				delete procSnap;
 				return 8;
 			}
+			delete procSnap;
 			return 7;
 		}
 
@@ -301,8 +308,10 @@ int ListOfProcesses() {
 				delete strProcPrior, pe;
 				if (!CloseHandle(*procSnap)) {
 					cout << "Error ListofProcesses 10" << endl;
+					delete procSnap;
 					return 10;
 				}
+				delete procSnap;
 				return 9;
 			}
 
@@ -314,14 +323,18 @@ int ListOfProcesses() {
 					cout << "Error ListofProcesses 12" << endl;
 					if (!CloseHandle(*procSnap)) {
 						cout << "Error ListofProcesses 13" << endl;
+						delete procSnap;
 						return 13;
 					}
+					delete procSnap;
 					return 12;
 				}
 				if (!CloseHandle(*procSnap)) {
 					cout << "Error ListofProcesses 14" << endl;
+					delete procSnap;
 					return 14;
 				}
+				delete procSnap;
 				return 11;
 			}
 
@@ -334,14 +347,18 @@ int ListOfProcesses() {
 					cout << "Error ListofProcesses 16" << endl;
 					if (!CloseHandle(*procSnap)) {
 						cout << "Error ListofProcesses 17" << endl;
+						delete procSnap;
 						return 17;
 					}
+					delete procSnap;
 					return 16;
 				}
 				if (!CloseHandle(*procSnap)) {
 					cout << "Error ListofProcesses 18" << endl;
+					delete procSnap;
 					return 18;
 				}
+				delete procSnap;
 				return 15;
 			}
 
@@ -351,8 +368,10 @@ int ListOfProcesses() {
 				delete strProcPrior, pe;
 				if (!CloseHandle(*procSnap)) {
 					cout << "Error ListofProcesses 20" << endl;
+					delete procSnap;
 					return 20;
 				}
+				delete procSnap;
 				return 19;
 			}
 		}
@@ -374,8 +393,10 @@ int ListOfProcesses() {
 		cout << "COULDN'T TAKE PROCESS LIST"; 
 		if (!CloseHandle(*procSnap)) {
 			cout << "Error ListofProcesses 22" << endl;
+			delete procSnap;
 			return 22;
 		}
+		delete procSnap;
 		return 23; 
 	}
 }
